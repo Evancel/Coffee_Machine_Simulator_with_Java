@@ -7,27 +7,26 @@ public class Beverage {
     private final int pricePerCup;
     private final int cup;
 
-    public Beverage(int water, int milk, int coffee, int cup, int price){
+    public Beverage(int water, int milk, int coffee, int price){
         this.waterPerCup = water;
         this.milkPerCup = milk;
         this.coffeePerCup = coffee;
-        this.cup = cup;
         this.pricePerCup = price;
     }
 
-    public int getWaterPerCup() {
+int getWaterPerCup() {
         return waterPerCup;
     }
 
-    public int getMilkPerCup() {
+int getMilkPerCup() {
         return milkPerCup;
     }
 
-    public int getCoffeePerCup() {
+int getCoffeePerCup() {
         return coffeePerCup;
     }
 
-    public int getPricePerCup() {
+int getPricePerCup() {
         return pricePerCup;
     }
 
