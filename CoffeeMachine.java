@@ -123,9 +123,9 @@ public class CoffeeMachine {
     private void makeCoffee(int coffeeChoice) throws IllegalArgumentException{
 
         Beverage coffee = switch (coffeeChoice) {
-            case 1 -> new Beverage(250,0,16,1,4);
-            case 2 -> new Beverage(350,75,20,1,7);
-            case 3 -> new Beverage(200,100,2,1,6);
+            case 1 -> new Beverage(250,0,16,4);
+            case 2 -> new Beverage(350,75,20,7);
+            case 3 -> new Beverage(200,100,12,6);
             default -> throw new IllegalArgumentException("Internal error. Can't create the Beverage. Check user's choice.");
         };
 
