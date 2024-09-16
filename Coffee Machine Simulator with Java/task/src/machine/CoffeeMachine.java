@@ -30,18 +30,15 @@ public class CoffeeMachine {
 
     private void userInput() {
         System.out.println("Write action (buy, fill, take, remaining, exit): ");
-        String input = sc.nextLine();
 
-        if (!validationUserInputToTheExistingButtons(input)) {
-            System.out.println("""
-                    Your input is wrong:
-                    If you want to buy a coffee type BUY,
-                    if you want to fill supplies type FILL,
-                    if you want to take money type TAKE,
-                    if you want to check all supplies type REMAINING,
-                    if you want to exit type EXIT.
-                    Please try again.""");
-            System.out.println();
+        if (!validateButtonSelection(sc.nextLine())) {
+            System.out.println("Your input is wrong:\n" +
+                    "If you want to buy a coffee type BUY,\n" +
+                    "if you want to fill supplies type FILL,\n" +
+                    "if you want to take money type TAKE,\n" +
+                    "if you want to check all supplies type REMAINING,\n" +
+                    "if you want to exit type EXIT.\n" +
+                    "Please try again.");
             return;
         }
 
@@ -49,112 +46,104 @@ public class CoffeeMachine {
         System.out.println();
     }
 
-    private boolean validationUserInputToTheExistingButtons(String someInput) {
-        boolean isValidInput = false;
+    private boolean validateButtonSelection(String userInput) {
+        boolean isInputValid = false;
         for (Button b : Button.values()) {
-            if (someInput.equalsIgnoreCase(b.getDescription())) {
-                isValidInput = true;
+            if (userInput.equalsIgnoreCase(b.getDescription())) {
+                isInputValid = true;
                 currentChoice = b;
                 break;
             }
         }
-        return isValidInput;
+        return isInputValid;
     }
 
-    private void printSuppliesAmount() {
-        System.out.printf("""
-                The coffee machine has:
-                %d ml of water
-                %d ml of milk
-                %d g of coffee beans
-                %d disposable cups
-                $%d of money
-                """, waterSupply, milkSupply, coffeeSupply, disposableCup, money);
+    private void printSuppliesRemaining() {
+        System.out.printf("The coffee machine has:\n" +
+                "%d ml of water\n" +
+                "%d ml of milk\n" +
+                "%d g of coffee beans\n" +
+                "%d disposable cups\n" +
+                "$%d of money\n"
+                , waterSupply, milkSupply, coffeeSupply, disposableCup, money);
     }
 
     private void proceedButton() {
+        System.out.println();
         switch (currentChoice) {
             case BUY -> buyCoffee();
-            case FILL -> inputSupplyQuantities();
+            case FILL -> fillSupplies();
             case TAKE -> takeMoney();
-            case STATUS -> printSuppliesAmount();
+            case STATUS -> printSuppliesRemaining();
         }
     }
 
     private void buyCoffee() {
-        int typeCoffee = validationUserInputToTheExistingTypeCoffee(
-                "What do you want to buy? 1 - espresso, 2 - latte, 3 - cappuccino, back - return to the main menu:");
-        if(typeCoffee == 0){
+        int coffeeChoice  = validateCoffeeChoice();
+        if(coffeeChoice  == 0){
             return;
         }
 
-        makeCoffee(typeCoffee);
+        try {
+            makeCoffee(coffeeChoice);
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
-    private int validationUserInputToTheExistingTypeCoffee(String s) {
-        boolean isInputSuccess = false;
-        int typeCoffee = 0;
+    private int validateCoffeeChoice() {
+        boolean isInputValid = false;
+        int coffeeChoice = 0;
         do {
-            System.out.println(s);
-            String input = sc.nextLine();
+            System.out.println("What do you want to buy? \n" +
+                    " 1 - espresso,\n" +
+                    " 2 - latte,\n" +
+                    " 3 - cappuccino,\n" +
+                    " back - return to the main menu:");
+            String userInput = sc.nextLine();
 
-            if(input.equalsIgnoreCase("back")){
+            if(userInput.equalsIgnoreCase("back")){
                 return 0;
             }
 
             try {
-                typeCoffee = Integer.parseInt(input);
-                isInputSuccess = (typeCoffee > 0) && (typeCoffee <= 3);
-                if (!isInputSuccess) {
+                coffeeChoice = Integer.parseInt(userInput);
+                isInputValid = (coffeeChoice > 0) && (coffeeChoice <= 3);
+                if (!isInputValid) {
                     System.out.println("Your input is wrong. Try again.");
                 }
             } catch (NumberFormatException e) {
                 System.out.println("Your input is wrong. Try again.");
             }
-        } while (!isInputSuccess);
+        } while (!isInputValid);
 
-        return typeCoffee;
+        return coffeeChoice;
     }
 
-    private void makeCoffee(int typeCoffee) {
+    private void makeCoffee(int coffeeChoice) throws IllegalArgumentException{
 
-        int waterPerCup = 0;
-        int milkPerCup = 0;
-        int coffeePerCup = 0;
-        int pricePerCup = 0;
-        int cup = 1;
+        Beverage coffee = switch (coffeeChoice) {
+            case 1 -> new Beverage(250,0,16,1,4);
+            case 2 -> new Beverage(350,75,20,1,7);
+            case 3 -> new Beverage(200,100,2,1,6);
+            default -> throw new IllegalArgumentException("Internal error. Can't create the Beverage. Check user's choice.");
+        };
 
-        switch (typeCoffee) {
-            case 1:
-                waterPerCup = 250;
-                coffeePerCup = 16;
-                pricePerCup = 4;
-                break;
-            case 2:
-                waterPerCup = 350;
-                milkPerCup = 75;
-                coffeePerCup = 20;
-                pricePerCup = 7;
-                break;
-            case 3:
-                waterPerCup = 200;
-                milkPerCup = 100;
-                coffeePerCup = 12;
-                pricePerCup = 6;
-                break;
-            default:
-                System.out.println("Internal Error. Unknown type of coffee!");
-                break;
-        }
-
-        if (isEnoughResourcesForTheCup(waterPerCup, milkPerCup, coffeePerCup, cup)) {
+        if (hasEnoughResources (coffee.getWaterPerCup(),
+                                    coffee.getMilkPerCup(),
+                                    coffee.getCoffeePerCup(),
+                                    coffee.getCup())) {
             System.out.println("I have enough resources, making you a coffee!");
-            updateSuppliesAmount(-waterPerCup, -milkPerCup, -coffeePerCup, -cup, pricePerCup);
+            updateSupplies( - coffee.getWaterPerCup(),
+                                - coffee.getMilkPerCup(),
+                                - coffee.getCoffeePerCup(),
+                                - coffee.getCup(),
+                                coffee.getPricePerCup());
         }
     }
 
-    private boolean isEnoughResourcesForTheCup(int water, int milk, int coffee, int cup) {
-        boolean isEnoughResources = false;
+    private boolean hasEnoughResources (int water, int milk, int coffee, int cup) {
+        boolean areResourcesEnough  = false;
         if (waterSupply < water) {
             System.out.println("Sorry, not enough water!");
             return false;
@@ -175,12 +164,12 @@ public class CoffeeMachine {
             return false;
         }
 
-        isEnoughResources = true;
+        areResourcesEnough  = true;
 
-        return isEnoughResources;
+        return areResourcesEnough;
     }
 
-    private void updateSuppliesAmount(int water, int milk, int coffee, int cup, int price) {
+    private void updateSupplies(int water, int milk, int coffee, int cup, int price) {
         waterSupply += water;
         milkSupply += milk;
         coffeeSupply += coffee;
@@ -190,36 +179,37 @@ public class CoffeeMachine {
 
     private void takeMoney() {
         System.out.printf("I gave you $%d\n", money);
-        updateSuppliesAmount(0, 0, 0, 0, -money);
+        updateSupplies(0, 0, 0, 0, -money);
     }
 
-    private void inputSupplyQuantities() {
-        int addWater = validationAddSupply("Write how many ml of water you want to add:");
-        int addMilk = validationAddSupply("Write how many ml of milk you want to add:");
-        int addCoffee = validationAddSupply("Write how many grams of coffee beans you want to add:");
-        int addCups = validationAddSupply("Write how many disposable cups you want to add:");
-        int addMoney = 0;
+    private void fillSupplies() {
+        int fillWater = validateSupplyFilling("Write how many ml of water you want to add:");
+        int fillMilk = validateSupplyFilling("Write how many ml of milk you want to add:");
+        int fillCoffee = validateSupplyFilling("Write how many grams of coffee beans you want to add:");
+        int fillCups = validateSupplyFilling("Write how many disposable cups you want to add:");
+        int fillMoney = 0;
 
-        updateSuppliesAmount(addWater, addMilk, addCoffee, addCups, addMoney);
+        updateSupplies(fillWater, fillMilk, fillCoffee, fillCups, fillMoney);
     }
 
-    private int validationAddSupply(String s) {
-        boolean isInputSuccess = false;
-        int addSupply = 0;
+    private int validateSupplyFilling(String menuPrompt) {
+        boolean isInputValid = false;
+        int fillSupply = 0;
         do {
-            System.out.println(s);
-            String input = sc.nextLine();
+            System.out.println(menuPrompt);
+
             try {
-                addSupply = Integer.parseInt(input);
-                isInputSuccess = (addSupply >= 0);
-                if (!isInputSuccess) {
+                fillSupply = Integer.parseInt(sc.nextLine());
+                isInputValid = (fillSupply >= 0);
+
+                if (!isInputValid) {
                     System.out.println("Your input is wrong.");
                 }
             } catch (NumberFormatException e) {
                 System.out.println("Your input is wrong.");
             }
-        } while (!isInputSuccess);
+        } while (!isInputValid);
 
-        return addSupply;
+        return fillSupply;
     }
 }
