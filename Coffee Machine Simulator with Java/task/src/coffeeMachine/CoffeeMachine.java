@@ -1,7 +1,5 @@
 package coffeeMachine;
 
-import machine.Button;
-
 import java.util.Scanner;
 
 public class CoffeeMachine {
