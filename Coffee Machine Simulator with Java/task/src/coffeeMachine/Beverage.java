@@ -18,19 +18,15 @@ public class Beverage {
     int getWaterPerCup() {
         return waterPerCup;
     }
-
     int getMilkPerCup() {
         return milkPerCup;
     }
-
     int getCoffeePerCup() {
         return coffeePerCup;
     }
-
     int getPricePerCup() {
         return pricePerCup;
     }
-
     int getCup() {
         return cup;
     }
