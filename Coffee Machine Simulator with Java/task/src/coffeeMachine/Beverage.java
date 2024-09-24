@@ -1,11 +1,26 @@
 package coffeeMachine;
 
+/**
+ * The Beverage class represents a beverage in a system, f.e. espresso, cappuccino, latte.
+ * It holds details like waterPerCup, milkPerCup, coffeePerCup, pricePerCup, cup.
+ * It provides methods to get the amount of each supply per cup.
+ */
+
 public class Beverage {
     private final int waterPerCup;
     private final int milkPerCup;
     private final int coffeePerCup;
     private final int pricePerCup;
     private final int cup;
+
+    /**
+     * Constructs a new Beverage with the given amount of water, milk, coffee and price.
+     *
+     * @param water describes water amount per cup
+     * @param milk describes milk amount per cup
+     * @param coffee describes coffee amount per cup
+     * @param price describes price for a cup
+     */
 
     public Beverage(int water, int milk, int coffee, int price){
         this.waterPerCup = water;
