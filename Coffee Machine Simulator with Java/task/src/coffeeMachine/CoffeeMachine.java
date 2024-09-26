@@ -32,36 +32,38 @@ public class CoffeeMachine {
     private Button currentChoice;
 
     private final Scanner sc;
+
+    // Define static constants
     private final static String MENU = "Write action (buy, fill, take, remaining, exit): ";
-    private final static String WRONG_CHOICE = "Your input is wrong:\n" +
-            "If you want to buy a coffee type BUY,\n" +
-            "if you want to fill supplies type FILL,\n" +
-            "if you want to take money type TAKE,\n" +
-            "if you want to check all supplies type REMAINING,\n" +
-            "if you want to exit type EXIT.\n" +
-            "Please try again.";
+    private final static String WRONG_CHOICE = """
+            Your input is wrong:
+            to buy a coffee type BUY,
+            to fill supplies type FILL,
+            to take money type TAKE,
+            to check all supplies type REMAINING,
+            to exit type EXIT.
+            
+            Please try again.""";
+    private final static String WRONG_INPUT = "Your input is wrong. Try again.";
 
     /**
      * Constructor for CoffeeMachine, initializing with default supplies.
-     *
-     * @param scanner Scanner object for reading user input.
      */
-    public CoffeeMachine(Scanner scanner){
-        this.sc = scanner;
+    public CoffeeMachine(){
+        this.sc = new Scanner(System.in);
     }
 
     /**
      * Constructor for CoffeeMachine, initializing with custom supplies.
      *
-     * @param scanner Scanner object for reading user input
      * @param waterSupply initial water supply in ml
      * @param milkSupply initial milk supply in ml
      * @param coffeeSupply initial coffee supply in grams
      * @param disposableCup initial count of disposable cups
      * @param money initial amount of money in dollars
      */
-    public CoffeeMachine(Scanner scanner, int waterSupply, int milkSupply, int coffeeSupply, int disposableCup, int money) {
-        this.sc = scanner;
+    public CoffeeMachine(int waterSupply, int milkSupply, int coffeeSupply, int disposableCup, int money) {
+        this.sc = new Scanner(System.in);
         this.waterSupply = waterSupply;
         this.milkSupply = milkSupply;
         this.coffeeSupply = coffeeSupply;
@@ -76,6 +78,7 @@ public class CoffeeMachine {
         do {
             userInput();
         } while (currentChoice != Button.EXIT);
+        sc.close();
     }
 
     /**
@@ -113,13 +116,14 @@ public class CoffeeMachine {
      * Prints the current supplies of the coffee machine (water, milk, coffee, cups, and money).
      */
     private void printSuppliesRemaining() {
-        System.out.printf("The coffee machine has:\n" +
-                "%d ml of water\n" +
-                "%d ml of milk\n" +
-                "%d g of coffee beans\n" +
-                "%d disposable cups\n" +
-                "$%d of money\n"
-                , waterSupply, milkSupply, coffeeSupply, disposableCup, money);
+        String REMAINING_INFO = String.format("""
+            The coffee machine has:
+            %d ml of water
+            %d ml of milk
+            %d g of coffee beans
+            %d disposable cups
+            $%d of money""", waterSupply, milkSupply, coffeeSupply, disposableCup, money);
+        System.out.println(REMAINING_INFO);
     }
 
     /**
@@ -158,14 +162,17 @@ public class CoffeeMachine {
      * @return the user's coffee choice, or 0 to return to the main menu
      */
     private int validateCoffeeChoice() {
+        String BEVERAGE_MENU = """
+            What do you want to buy?\s
+             1 - espresso,
+             2 - latte,
+             3 - cappuccino,
+             back - return to the main menu:""";
+
         boolean isInputValid = false;
         int coffeeChoice = 0;
         do {
-            System.out.println("What do you want to buy? \n" +
-                    " 1 - espresso,\n" +
-                    " 2 - latte,\n" +
-                    " 3 - cappuccino,\n" +
-                    " back - return to the main menu:");
+            System.out.println(BEVERAGE_MENU);
             String userInput = sc.nextLine();
 
             if(userInput.equalsIgnoreCase("back")){
@@ -176,10 +183,10 @@ public class CoffeeMachine {
                 coffeeChoice = Integer.parseInt(userInput);
                 isInputValid = (coffeeChoice > 0) && (coffeeChoice <= 3);
                 if (!isInputValid) {
-                    System.out.println("Your input is wrong. Try again.");
+                    System.out.println(WRONG_INPUT);
                 }
             } catch (NumberFormatException e) {
-                System.out.println("Your input is wrong. Try again.");
+                System.out.println(WRONG_INPUT);
             }
         } while (!isInputValid);
 
@@ -193,6 +200,7 @@ public class CoffeeMachine {
      * @throws IllegalArgumentException if the coffee choice is invalid
      */
     private void makeCoffee(int coffeeChoice) throws IllegalArgumentException{
+        String ENOUGH_RESOURCES = "I have enough resources, making you a coffee!";
 
         Beverage coffee = switch (coffeeChoice) {
             case 1 -> new Beverage(250,0,16,4);
@@ -205,7 +213,7 @@ public class CoffeeMachine {
                                     coffee.getMilkPerCup(),
                                     coffee.getCoffeePerCup(),
                                     coffee.getCup())) {
-            System.out.println("I have enough resources, making you a coffee!");
+            System.out.println(ENOUGH_RESOURCES);
             updateSupplies( - coffee.getWaterPerCup(),
                                 - coffee.getMilkPerCup(),
                                 - coffee.getCoffeePerCup(),
@@ -224,23 +232,28 @@ public class CoffeeMachine {
      * @return true if enough resources are available, false otherwise
      */
     private boolean hasEnoughResources (int water, int milk, int coffee, int cup) {
+        String NOT_ENOUGH_WATER = "Sorry, not enough water!";
+        String NOT_ENOUGH_MILK = "Sorry, not enough milk!";
+        String NOT_ENOUGH_COFFEE = "Sorry, not enough coffee beans!";
+        String NOT_ENOUGH_CUPS = "Sorry, not enough disposable cups!";
+
         if (waterSupply < water) {
-            System.out.println("Sorry, not enough water!");
+            System.out.println(NOT_ENOUGH_WATER);
             return false;
         }
 
         if (milkSupply < milk) {
-            System.out.println("Sorry, not enough milk!");
+            System.out.println(NOT_ENOUGH_MILK);
             return false;
         }
 
         if (coffeeSupply < coffee) {
-            System.out.println("Sorry, not enough coffee beans!");
+            System.out.println(NOT_ENOUGH_COFFEE);
             return false;
         }
 
         if (disposableCup < cup) {
-            System.out.println("Sorry, not enough disposable cups!");
+            System.out.println(NOT_ENOUGH_CUPS);
             return false;
         }
 
@@ -280,10 +293,15 @@ public class CoffeeMachine {
      * values are entered. After receiving valid inputs, the machine's supplies are updated accordingly.
      */
     private void fillSupplies() {
-        int fillWater = validateSupplyFilling("Write how many ml of water you want to add:");
-        int fillMilk = validateSupplyFilling("Write how many ml of milk you want to add:");
-        int fillCoffee = validateSupplyFilling("Write how many grams of coffee beans you want to add:");
-        int fillCups = validateSupplyFilling("Write how many disposable cups you want to add:");
+        String ADD_WATER_PROMPT = "Write how many ml of water you want to add:";
+        String ADD_MILK_PROMPT = "Write how many ml of milk you want to add:";
+        String ADD_COFFEE_PROMPT = "Write how many grams of coffee beans you want to add:";
+        String ADD_CUPS_PROMPT = "Write how many disposable cups you want to add:";
+
+        int fillWater = validateSupplyFilling(ADD_WATER_PROMPT);
+        int fillMilk = validateSupplyFilling(ADD_MILK_PROMPT);
+        int fillCoffee = validateSupplyFilling(ADD_COFFEE_PROMPT);
+        int fillCups = validateSupplyFilling(ADD_CUPS_PROMPT);
         int fillMoney = 0;
 
         updateSupplies(fillWater, fillMilk, fillCoffee, fillCups, fillMoney);
@@ -310,10 +328,10 @@ public class CoffeeMachine {
                 isInputValid = (fillSupply >= 0);
 
                 if (!isInputValid) {
-                    System.out.println("Your input is wrong.");
+                    System.out.println(WRONG_INPUT);
                 }
             } catch (NumberFormatException e) {
-                System.out.println("Your input is wrong.");
+                System.out.println(WRONG_INPUT);
             }
         } while (!isInputValid);
 
