@@ -35,6 +35,28 @@ public class CoffeeMachine {
 
     // Define static constants
     private final static String MENU = "Write action (buy, fill, take, remaining, exit): ";
+    private final static String BEVERAGE_MENU = """
+            What do you want to buy?\s
+             1 - espresso,
+             2 - latte,
+             3 - cappuccino,
+             back - return to the main menu:""";
+    private static final String REMAINING_INFO_FORMAT = """
+            The coffee machine has:
+            %d ml of water
+            %d ml of milk
+            %d g of coffee beans
+            %d disposable cups
+            $%d of money""";
+    private final static String ENOUGH_RESOURCES = "I have enough resources, making you a coffee!";
+    private final static String NOT_ENOUGH_WATER = "Sorry, not enough water!";
+    private final static String NOT_ENOUGH_MILK = "Sorry, not enough milk!";
+    private final static String NOT_ENOUGH_COFFEE = "Sorry, not enough coffee beans!";
+    private final static String NOT_ENOUGH_CUPS = "Sorry, not enough disposable cups!";
+    private final static String ADD_WATER_PROMPT = "Write how many ml of water you want to add:";
+    private final static String ADD_MILK_PROMPT = "Write how many ml of milk you want to add:";
+    private final static String ADD_COFFEE_PROMPT = "Write how many grams of coffee beans you want to add:";
+    private final static String ADD_CUPS_PROMPT = "Write how many disposable cups you want to add:";
     private final static String WRONG_CHOICE = """
             Your input is wrong:
             to buy a coffee type BUY,
@@ -74,7 +96,7 @@ public class CoffeeMachine {
     /**
      * Starts the coffee machine's main loop, processing user input until "exit" is selected.
      */
-    public void work() {
+    public void start() {
         do {
             userInput();
         } while (currentChoice != Button.EXIT);
@@ -92,7 +114,7 @@ public class CoffeeMachine {
             return;
         }
 
-        proceedButton();
+        work();
         System.out.println();
     }
 
@@ -116,20 +138,14 @@ public class CoffeeMachine {
      * Prints the current supplies of the coffee machine (water, milk, coffee, cups, and money).
      */
     private void printSuppliesRemaining() {
-        String REMAINING_INFO = String.format("""
-            The coffee machine has:
-            %d ml of water
-            %d ml of milk
-            %d g of coffee beans
-            %d disposable cups
-            $%d of money""", waterSupply, milkSupply, coffeeSupply, disposableCup, money);
-        System.out.println(REMAINING_INFO);
+        String remainingInfo = String.format(REMAINING_INFO_FORMAT, waterSupply, milkSupply, coffeeSupply, disposableCup, money);
+        System.out.println(remainingInfo);
     }
 
     /**
      * Proceeds with the action based on the user's current choice.
      */
-    private void proceedButton() {
+    private void work() {
         System.out.println();
         switch (currentChoice) {
             case BUY -> buyCoffee();
@@ -162,13 +178,6 @@ public class CoffeeMachine {
      * @return the user's coffee choice, or 0 to return to the main menu
      */
     private int validateCoffeeChoice() {
-        String BEVERAGE_MENU = """
-            What do you want to buy?\s
-             1 - espresso,
-             2 - latte,
-             3 - cappuccino,
-             back - return to the main menu:""";
-
         boolean isInputValid = false;
         int coffeeChoice = 0;
         do {
@@ -200,8 +209,6 @@ public class CoffeeMachine {
      * @throws IllegalArgumentException if the coffee choice is invalid
      */
     private void makeCoffee(int coffeeChoice) throws IllegalArgumentException{
-        String ENOUGH_RESOURCES = "I have enough resources, making you a coffee!";
-
         Beverage coffee = switch (coffeeChoice) {
             case 1 -> new Beverage(250,0,16,4);
             case 2 -> new Beverage(350,75,20,7);
@@ -232,10 +239,6 @@ public class CoffeeMachine {
      * @return true if enough resources are available, false otherwise
      */
     private boolean hasEnoughResources (int water, int milk, int coffee, int cup) {
-        String NOT_ENOUGH_WATER = "Sorry, not enough water!";
-        String NOT_ENOUGH_MILK = "Sorry, not enough milk!";
-        String NOT_ENOUGH_COFFEE = "Sorry, not enough coffee beans!";
-        String NOT_ENOUGH_CUPS = "Sorry, not enough disposable cups!";
 
         if (waterSupply < water) {
             System.out.println(NOT_ENOUGH_WATER);
@@ -293,11 +296,6 @@ public class CoffeeMachine {
      * values are entered. After receiving valid inputs, the machine's supplies are updated accordingly.
      */
     private void fillSupplies() {
-        String ADD_WATER_PROMPT = "Write how many ml of water you want to add:";
-        String ADD_MILK_PROMPT = "Write how many ml of milk you want to add:";
-        String ADD_COFFEE_PROMPT = "Write how many grams of coffee beans you want to add:";
-        String ADD_CUPS_PROMPT = "Write how many disposable cups you want to add:";
-
         int fillWater = validateSupplyFilling(ADD_WATER_PROMPT);
         int fillMilk = validateSupplyFilling(ADD_MILK_PROMPT);
         int fillCoffee = validateSupplyFilling(ADD_COFFEE_PROMPT);
