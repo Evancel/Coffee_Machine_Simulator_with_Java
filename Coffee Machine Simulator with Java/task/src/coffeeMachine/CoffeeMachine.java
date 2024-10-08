@@ -1,6 +1,5 @@
 package coffeeMachine;
 
-import java.util.Scanner;
 /**
  * The CoffeeMachine class simulates a simple coffee machine.
  * It manages the supplies of water, milk, coffee beans, disposable cups, and money.
@@ -30,11 +29,10 @@ public class CoffeeMachine {
     private int money;
 
     private Button currentChoice;
-
-    private final Scanner sc;
+    private final UserInterface ui;
 
     // Define static constants
-    private final static String MENU = "Write action (buy, fill, take, remaining, exit): ";
+    private final static String MENU = "\nWrite action (buy, fill, take, remaining, exit): ";
     private final static String BEVERAGE_MENU = """
             What do you want to buy?\s
              1 - espresso,
@@ -48,6 +46,7 @@ public class CoffeeMachine {
             %d g of coffee beans
             %d disposable cups
             $%d of money""";
+    private static final String GIVING_MONEY_FORMAT ="I gave you $%d";
     private final static String ENOUGH_RESOURCES = "I have enough resources, making you a coffee!";
     private final static String NOT_ENOUGH_WATER = "Sorry, not enough water!";
     private final static String NOT_ENOUGH_MILK = "Sorry, not enough milk!";
@@ -72,7 +71,7 @@ public class CoffeeMachine {
      * Constructor for CoffeeMachine, initializing with default supplies.
      */
     public CoffeeMachine(){
-        this.sc = new Scanner(System.in);
+        this.ui = new UserInterface();
     }
 
     /**
@@ -85,7 +84,7 @@ public class CoffeeMachine {
      * @param money initial amount of money in dollars
      */
     public CoffeeMachine(int waterSupply, int milkSupply, int coffeeSupply, int disposableCup, int money) {
-        this.sc = new Scanner(System.in);
+        this.ui = new UserInterface();
         this.waterSupply = waterSupply;
         this.milkSupply = milkSupply;
         this.coffeeSupply = coffeeSupply;
@@ -100,22 +99,20 @@ public class CoffeeMachine {
         do {
             userInput();
         } while (currentChoice != Button.EXIT);
-        sc.close();
+        ui.exit();
     }
 
     /**
      * Handles the user's input and validates it against available actions.
      */
     private void userInput() {
-        System.out.println(MENU);
+        String input = ui.getUserInput(MENU);
 
-        if (!validateButtonSelection(sc.nextLine())) {
-            System.out.println(WRONG_CHOICE);
+        if (!validateButtonSelection(input)) {
+            ui.showMessage(WRONG_CHOICE);
             return;
         }
-
         work();
-        System.out.println();
     }
 
     /**
@@ -139,14 +136,13 @@ public class CoffeeMachine {
      */
     private void printSuppliesRemaining() {
         String remainingInfo = String.format(REMAINING_INFO_FORMAT, waterSupply, milkSupply, coffeeSupply, disposableCup, money);
-        System.out.println(remainingInfo);
+        ui.showMessage(remainingInfo);
     }
 
     /**
      * Proceeds with the action based on the user's current choice.
      */
     private void work() {
-        System.out.println();
         switch (currentChoice) {
             case BUY -> buyCoffee();
             case FILL -> fillSupplies();
@@ -168,7 +164,7 @@ public class CoffeeMachine {
         try {
             makeCoffee(coffeeChoice);
         } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
+            ui.showMessage(e.getMessage());
         }
     }
 
@@ -181,8 +177,7 @@ public class CoffeeMachine {
         boolean isInputValid = false;
         int coffeeChoice = 0;
         do {
-            System.out.println(BEVERAGE_MENU);
-            String userInput = sc.nextLine();
+            String userInput = ui.getUserInput(BEVERAGE_MENU);
 
             if(userInput.equalsIgnoreCase("back")){
                 return 0;
@@ -192,10 +187,10 @@ public class CoffeeMachine {
                 coffeeChoice = Integer.parseInt(userInput);
                 isInputValid = (coffeeChoice > 0) && (coffeeChoice <= 3);
                 if (!isInputValid) {
-                    System.out.println(WRONG_INPUT);
+                    ui.showMessage(WRONG_INPUT);
                 }
             } catch (NumberFormatException e) {
-                System.out.println(WRONG_INPUT);
+                ui.showMessage(WRONG_INPUT);
             }
         } while (!isInputValid);
 
@@ -220,7 +215,7 @@ public class CoffeeMachine {
                                     coffee.getMilkPerCup(),
                                     coffee.getCoffeePerCup(),
                                     coffee.getCup())) {
-            System.out.println(ENOUGH_RESOURCES);
+            ui.showMessage(ENOUGH_RESOURCES);
             updateSupplies( - coffee.getWaterPerCup(),
                                 - coffee.getMilkPerCup(),
                                 - coffee.getCoffeePerCup(),
@@ -241,22 +236,22 @@ public class CoffeeMachine {
     private boolean hasEnoughResources (int water, int milk, int coffee, int cup) {
 
         if (waterSupply < water) {
-            System.out.println(NOT_ENOUGH_WATER);
+            ui.showMessage(NOT_ENOUGH_WATER);
             return false;
         }
 
         if (milkSupply < milk) {
-            System.out.println(NOT_ENOUGH_MILK);
+            ui.showMessage(NOT_ENOUGH_MILK);
             return false;
         }
 
         if (coffeeSupply < coffee) {
-            System.out.println(NOT_ENOUGH_COFFEE);
+            ui.showMessage(NOT_ENOUGH_COFFEE);
             return false;
         }
 
         if (disposableCup < cup) {
-            System.out.println(NOT_ENOUGH_CUPS);
+            ui.showMessage(NOT_ENOUGH_CUPS);
             return false;
         }
 
@@ -284,7 +279,8 @@ public class CoffeeMachine {
      * Takes all the money currently in the machine and resets the money amount to zero.
      */
     private void takeMoney() {
-        System.out.printf("I gave you $%d\n", money);
+        String givingMoney = String.format(GIVING_MONEY_FORMAT, money);
+        ui.showMessage(givingMoney);
         updateSupplies(0, 0, 0, 0, -money);
     }
 
@@ -319,17 +315,17 @@ public class CoffeeMachine {
         boolean isInputValid = false;
         int fillSupply = 0;
         do {
-            System.out.println(menuPrompt);
+            String input = ui.getUserInput(menuPrompt);
 
             try {
-                fillSupply = Integer.parseInt(sc.nextLine());
+                fillSupply = Integer.parseInt(input);
                 isInputValid = (fillSupply >= 0);
 
                 if (!isInputValid) {
-                    System.out.println(WRONG_INPUT);
+                    ui.showMessage(WRONG_INPUT);
                 }
             } catch (NumberFormatException e) {
-                System.out.println(WRONG_INPUT);
+                ui.showMessage(WRONG_INPUT);
             }
         } while (!isInputValid);
 
