@@ -21,11 +21,6 @@ public class Machine {
     private int disposableCup;
     private int money;
 
-    private int addWater;
-    private int addMilk;
-    private int addCoffee;
-    private int addCup;
-
     public Machine(int water, int milk, int coffee, int cup, int money) {
         this.waterSupply = water;
         this.milkSupply = milk;
@@ -61,40 +56,42 @@ public class Machine {
                 setWaitingInputStatus();
                 break;
             case ADDING_WATER:
-                addWater = validationAddSupply(s);
+                int addWater = validationAddSupply(s);
                 if (addWater < 0) {
                     addWater = 0;
                     return;
                 }
+                waterSupply += addWater;
                 System.out.println("Write how many ml of milk you want to add: ");
                 currentStatus = Status.ADDING_MILK;
                 break;
             case ADDING_MILK:
-                addMilk = validationAddSupply(s);
+                int addMilk = validationAddSupply(s);
                 if (addMilk < 0) {
                     addMilk = 0;
                     return;
                 }
+                milkSupply += addMilk;
                 System.out.println("Write how many grams of coffee beans you want to add: ");
                 currentStatus = Status.ADDING_COFFEE;
                 break;
             case ADDING_COFFEE:
-                addCoffee = validationAddSupply(s);
+                int addCoffee = validationAddSupply(s);
                 if (addCoffee < 0) {
                     addCoffee = 0;
                     return;
                 }
+                coffeeSupply += addCoffee;
                 System.out.println("Write how many disposable cups you want to add: ");
                 currentStatus = Status.ADDING_CUPS;
                 break;
             case ADDING_CUPS:
-                addCup = validationAddSupply(s);
+                int addCup = validationAddSupply(s);
                 if (addCup < 0) {
                     addCup = 0;
                     return;
                 }
-                updateSuppliesAmount(addWater, addMilk, addCoffee, addCup, 0);
-                clearAddingSupplies();
+                disposableCup += addCup;
                 setWaitingInputStatus();
                 break;
             default:
@@ -266,13 +263,6 @@ public class Machine {
         coffeeSupply += coffee;
         disposableCup += cup;
         money += price;
-    }
-
-    private void clearAddingSupplies() {
-        addWater = 0;
-        addMilk = 0;
-        addCoffee = 0;
-        addCup = 0;
     }
 
     private int validationAddSupply(String input) {
