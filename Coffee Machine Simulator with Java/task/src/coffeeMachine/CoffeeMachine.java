@@ -1,25 +1,10 @@
 package coffeeMachine;
 
+import java.util.Scanner;
 /**
- * The CoffeeMachine class simulates a simple coffee machine.
- * It manages the supplies of water, milk, coffee beans, disposable cups, and money.
- * Users can interact with the coffee machine by selecting various actions, such as buying coffee,
- * filling supplies, taking money, or viewing the remaining supplies.
- *
- * This class provides methods to validate user input, handle coffee purchases, refill supplies,
- * and ensure that there are enough resources available for making coffee.
- *
- * The user interacts with the coffee machine through a command-line interface (CLI), where they
- * input actions like "buy", "fill", "take", "remaining", or "exit".
- *
- * Attributes:
- * - waterSupply: the amount of water in the machine (in ml)
- * - milkSupply: the amount of milk in the machine (in ml)
- * - coffeeSupply: the amount of coffee beans in the machine (in grams)
- * - disposableCup: the number of disposable cups available
- * - money: the amount of money collected from coffee sales
- * - currentChoice: the user's current selected action (buy, fill, take, etc.)
- * - sc: a Scanner object for handling user input
+ * The CoffeeMachine class simulates a coffee machine that manages resources
+ * such as water, milk, coffee, and disposable cups. It allows users to buy coffee,
+ * refill supplies, take money, and check the machine's status.
  */
 public class CoffeeMachine {
     private int waterSupply;
@@ -30,61 +15,26 @@ public class CoffeeMachine {
 
     private Button currentChoice;
     private final UserInterface ui;
+    private final Scanner scanner;
 
-    // Define static constants
-    private final static String MENU = "\nWrite action (buy, fill, take, remaining, exit): ";
-    private final static String BEVERAGE_MENU = """
-            What do you want to buy?\s
-             1 - espresso,
-             2 - latte,
-             3 - cappuccino,
-             back - return to the main menu:""";
-    private static final String REMAINING_INFO_FORMAT = """
-            The coffee machine has:
-            %d ml of water
-            %d ml of milk
-            %d g of coffee beans
-            %d disposable cups
-            $%d of money""";
-    private static final String GIVING_MONEY_FORMAT ="I gave you $%d";
-    private final static String ENOUGH_RESOURCES = "I have enough resources, making you a coffee!";
-    private final static String NOT_ENOUGH_WATER = "Sorry, not enough water!";
-    private final static String NOT_ENOUGH_MILK = "Sorry, not enough milk!";
-    private final static String NOT_ENOUGH_COFFEE = "Sorry, not enough coffee beans!";
-    private final static String NOT_ENOUGH_CUPS = "Sorry, not enough disposable cups!";
-    private final static String ADD_WATER_PROMPT = "Write how many ml of water you want to add:";
-    private final static String ADD_MILK_PROMPT = "Write how many ml of milk you want to add:";
-    private final static String ADD_COFFEE_PROMPT = "Write how many grams of coffee beans you want to add:";
-    private final static String ADD_CUPS_PROMPT = "Write how many disposable cups you want to add:";
-    private final static String WRONG_CHOICE = """
-            Your input is wrong:
-            to buy a coffee type BUY,
-            to fill supplies type FILL,
-            to take money type TAKE,
-            to check all supplies type REMAINING,
-            to exit type EXIT.
-            
-            Please try again.""";
-    private final static String WRONG_INPUT = "Your input is wrong. Try again.";
+    public CoffeeMachine() {
+        this.scanner = new Scanner(System.in);
+        this.ui = new UserInterface(scanner);
 
-    /**
-     * Constructor for CoffeeMachine, initializing with default supplies.
-     */
-    public CoffeeMachine(){
-        this.ui = new UserInterface();
     }
 
     /**
-     * Constructor for CoffeeMachine, initializing with custom supplies.
+     * Constructor that initializes the CoffeeMachine with specified resource levels.
      *
-     * @param waterSupply initial water supply in ml
-     * @param milkSupply initial milk supply in ml
-     * @param coffeeSupply initial coffee supply in grams
-     * @param disposableCup initial count of disposable cups
-     * @param money initial amount of money in dollars
+     * @param waterSupply    The initial amount of water in the machine.
+     * @param milkSupply     The initial amount of milk in the machine.
+     * @param coffeeSupply   The initial amount of coffee in the machine.
+     * @param disposableCup  The initial number of disposable cups.
+     * @param money          The initial amount of money in the machine.
      */
     public CoffeeMachine(int waterSupply, int milkSupply, int coffeeSupply, int disposableCup, int money) {
-        this.ui = new UserInterface();
+        this.scanner = new Scanner(System.in);
+        this.ui = new UserInterface(scanner);
         this.waterSupply = waterSupply;
         this.milkSupply = milkSupply;
         this.coffeeSupply = coffeeSupply;
@@ -93,165 +43,111 @@ public class CoffeeMachine {
     }
 
     /**
-     * Starts the coffee machine's main loop, processing user input until "exit" is selected.
+     * Starts the coffee machine and allows the user to interact with it
+     * until the 'exit' option is selected.
      */
     public void start() {
         do {
-            userInput();
+            work();
         } while (currentChoice != Button.EXIT);
         ui.exit();
     }
 
     /**
-     * Handles the user's input and validates it against available actions.
-     */
-    private void userInput() {
-        String input = ui.getUserInput(MENU);
-
-        if (!validateButtonSelection(input)) {
-            ui.showMessage(WRONG_CHOICE);
-            return;
-        }
-        work();
-    }
-
-    /**
-     * Validates the user's button selection by comparing the input with the defined buttons.
+     * Validates the user's input choice.
      *
-     * @param userInput the string entered by the user
-     * @return true if the input matches a valid button action, false otherwise
+     * @return true if the user input is valid, false otherwise.
      */
-    private boolean validateButtonSelection(String userInput) {
-        for (Button button : Button.values()) {
-            if (userInput.equalsIgnoreCase(button.getDescription())) {
-                currentChoice = button;
-                return true;
-            }
-        }
-        return false;
+    private boolean userInputIsValid() {
+        currentChoice = ui.userChoice();
+        return currentChoice != null;
     }
 
     /**
-     * Prints the current supplies of the coffee machine (water, milk, coffee, cups, and money).
-     */
-    private void printSuppliesRemaining() {
-        String remainingInfo = String.format(REMAINING_INFO_FORMAT, waterSupply, milkSupply, coffeeSupply, disposableCup, money);
-        ui.showMessage(remainingInfo);
-    }
-
-    /**
-     * Proceeds with the action based on the user's current choice.
+     * Performs actions based on the user's choice: buy coffee, fill supplies,
+     * take money, or check status.
      */
     private void work() {
+        if (!userInputIsValid()) {
+            return;
+        }
+
         switch (currentChoice) {
             case BUY -> buyCoffee();
             case FILL -> fillSupplies();
             case TAKE -> takeMoney();
-            case STATUS -> printSuppliesRemaining();
+            case STATUS -> statusInfo();
         }
     }
 
     /**
-     * Handles the process of buying coffee. The user can choose from espresso, latte, or cappuccino.
-     * Validates if the machine has enough resources to make the selected coffee.
+     * Handles the coffee purchase process by validating and making the coffee.
      */
     private void buyCoffee() {
-        int coffeeChoice  = validateCoffeeChoice();
-        if(coffeeChoice  == 0){
+        int coffeeChoice = ui.validateCoffeeChoice();
+        if (coffeeChoice == 0) {
             return;
         }
 
         try {
             makeCoffee(coffeeChoice);
         } catch (IllegalArgumentException e) {
-            ui.showMessage(e.getMessage());
+            ui.display(e.getMessage());
         }
     }
 
     /**
-     * Validates the user's coffee choice and returns the selection.
+     * Makes a coffee based on the user's choice and updates the machine's resources.
      *
-     * @return the user's coffee choice, or 0 to return to the main menu
+     * @param coffeeChoice The type of coffee selected by the user.
+     * @throws IllegalArgumentException if the coffee type is invalid.
      */
-    private int validateCoffeeChoice() {
-        boolean isInputValid = false;
-        int coffeeChoice = 0;
-        do {
-            String userInput = ui.getUserInput(BEVERAGE_MENU);
-
-            if(userInput.equalsIgnoreCase("back")){
-                return 0;
-            }
-
-            try {
-                coffeeChoice = Integer.parseInt(userInput);
-                isInputValid = (coffeeChoice > 0) && (coffeeChoice <= 3);
-                if (!isInputValid) {
-                    ui.showMessage(WRONG_INPUT);
-                }
-            } catch (NumberFormatException e) {
-                ui.showMessage(WRONG_INPUT);
-            }
-        } while (!isInputValid);
-
-        return coffeeChoice;
-    }
-
-    /**
-     * Makes the selected coffee by checking if there are enough resources and updating supplies.
-     *
-     * @param coffeeChoice the type of coffee selected by the user
-     * @throws IllegalArgumentException if the coffee choice is invalid
-     */
-    private void makeCoffee(int coffeeChoice) throws IllegalArgumentException{
+    private void makeCoffee(int coffeeChoice) throws IllegalArgumentException {
         Beverage coffee = switch (coffeeChoice) {
-            case 1 -> new Beverage(250,0,16,4);
-            case 2 -> new Beverage(350,75,20,7);
-            case 3 -> new Beverage(200,100,12,6);
-            default -> throw new IllegalArgumentException("Internal error. Can't create the Beverage. Check user's choice.");
+            case 1 -> new Beverage(250, 0, 16, 4);
+            case 2 -> new Beverage(350, 75, 20, 7);
+            case 3 -> new Beverage(200, 100, 12, 6);
+            default ->
+                    throw new IllegalArgumentException("Internal error. Can't create the Beverage. Check user's choice.");
         };
 
-        if (hasEnoughResources (coffee.getWaterPerCup(),
-                                    coffee.getMilkPerCup(),
-                                    coffee.getCoffeePerCup(),
-                                    coffee.getCup())) {
-            ui.showMessage(ENOUGH_RESOURCES);
-            updateSupplies( - coffee.getWaterPerCup(),
-                                - coffee.getMilkPerCup(),
-                                - coffee.getCoffeePerCup(),
-                                - coffee.getCup(),
-                                coffee.getPricePerCup());
+        if (hasEnoughResources(coffee.getWaterPerCup(),
+                coffee.getMilkPerCup(),
+                coffee.getCoffeePerCup(),
+                coffee.getCup())) {
+            ui.displaySuccessMessage();
+            updateSupplies(-coffee.getWaterPerCup(),
+                    -coffee.getMilkPerCup(),
+                    -coffee.getCoffeePerCup(),
+                    -coffee.getCup(),
+                    coffee.getPricePerCup());
         }
     }
 
     /**
      * Checks if the machine has enough resources to make the selected coffee.
      *
-     * @param water the required amount of water
-     * @param milk the required amount of milk
-     * @param coffee the required amount of coffee beans
-     * @param cup the required number of disposable cups
-     * @return true if enough resources are available, false otherwise
+     * @param water  The amount of water required.
+     * @param milk   The amount of milk required.
+     * @param coffee The amount of coffee required.
+     * @param cup    The number of disposable cups required.
+     * @return true if there are enough resources, false otherwise.
      */
-    private boolean hasEnoughResources (int water, int milk, int coffee, int cup) {
-
+    private boolean hasEnoughResources(int water, int milk, int coffee, int cup) {
         if (waterSupply < water) {
-            ui.showMessage(NOT_ENOUGH_WATER);
+            ui.displayNotEnoughWater();
             return false;
         }
-
         if (milkSupply < milk) {
-            ui.showMessage(NOT_ENOUGH_MILK);
+            ui.displayNotEnoughMilk();
             return false;
         }
-
         if (coffeeSupply < coffee) {
-            ui.showMessage(NOT_ENOUGH_COFFEE);
+            ui.displayNotEnoughCoffee();
             return false;
         }
-
         if (disposableCup < cup) {
-            ui.showMessage(NOT_ENOUGH_CUPS);
+            ui.displayNotEnoughCups();
             return false;
         }
 
@@ -259,13 +155,13 @@ public class CoffeeMachine {
     }
 
     /**
-     * Updates the machine's supplies after making coffee or other actions.
+     * Updates the machine's resources after making a coffee or refilling supplies.
      *
-     * @param water the amount of water used or added
-     * @param milk the amount of milk used or added
-     * @param coffee the amount of coffee beans used or added
-     * @param cup the number of disposable cups used or added
-     * @param price the amount of money earned from selling coffee
+     * @param water  The change in water supply.
+     * @param milk   The change in milk supply.
+     * @param coffee The change in coffee supply.
+     * @param cup    The change in disposable cups.
+     * @param price  The amount of money gained from selling the coffee.
      */
     private void updateSupplies(int water, int milk, int coffee, int cup, int price) {
         waterSupply += water;
@@ -276,59 +172,30 @@ public class CoffeeMachine {
     }
 
     /**
-     * Takes all the money currently in the machine and resets the money amount to zero.
+     * Allows the user to take the money from the machine.
      */
     private void takeMoney() {
-        String givingMoney = String.format(GIVING_MONEY_FORMAT, money);
-        ui.showMessage(givingMoney);
+        ui.printMoneyMessage(money);
         updateSupplies(0, 0, 0, 0, -money);
     }
 
     /**
-     * Prompts the user to input the amount of each supply they wish to add to the coffee machine.
-     * The user is asked to input values for water (ml), milk (ml), coffee beans (grams),
-     * and disposable cups (count).
-     * Each input is validated using the `validateSupplyFilling` method to ensure non-negative
-     * values are entered. After receiving valid inputs, the machine's supplies are updated accordingly.
+     * Refills the machine's resources based on user input.
      */
     private void fillSupplies() {
-        int fillWater = validateSupplyFilling(ADD_WATER_PROMPT);
-        int fillMilk = validateSupplyFilling(ADD_MILK_PROMPT);
-        int fillCoffee = validateSupplyFilling(ADD_COFFEE_PROMPT);
-        int fillCups = validateSupplyFilling(ADD_CUPS_PROMPT);
+        int fillWater = ui.validateWater();
+        int fillMilk = ui.validateMilk();
+        int fillCoffee = ui.validateCoffee();
+        int fillCups = ui.validateCups();
         int fillMoney = 0;
 
         updateSupplies(fillWater, fillMilk, fillCoffee, fillCups, fillMoney);
     }
 
     /**
-     * Validates the user's input for refilling supplies.
-     * Displays the given menu prompt and reads the user's input. The input is then checked
-     * to ensure it is a valid non-negative integer. If the input is invalid (either not a number
-     * or a negative number), the user is prompted to try again. The method keeps prompting until
-     * a valid input is received.
-     *
-     * @param menuPrompt the prompt message to display to the user for input
-     * @return the validated supply amount as a non-negative integer
+     * Displays the current status of the machine's resources.
      */
-    private int validateSupplyFilling(String menuPrompt) {
-        boolean isInputValid = false;
-        int fillSupply = 0;
-        do {
-            String input = ui.getUserInput(menuPrompt);
-
-            try {
-                fillSupply = Integer.parseInt(input);
-                isInputValid = (fillSupply >= 0);
-
-                if (!isInputValid) {
-                    ui.showMessage(WRONG_INPUT);
-                }
-            } catch (NumberFormatException e) {
-                ui.showMessage(WRONG_INPUT);
-            }
-        } while (!isInputValid);
-
-        return fillSupply;
+    private void statusInfo() {
+        ui.printSuppliesRemaining(waterSupply, milkSupply, coffeeSupply, disposableCup, money);
     }
 }
