@@ -8,10 +8,43 @@ import java.util.Scanner;
  */
 public class UserInterface {
 
-    private final Scanner scanner;
+    private final Scanner scanner = new Scanner(System.in);
+    private final static String BEVERAGE_MENU = """
+            What do you want to buy?\s
+             1 - espresso,
+             2 - latte,
+             3 - cappuccino,
+             back - return to the main menu:""";
+    private static final String STATUS_INFO_FORMAT = """
+            The coffee machine has:
+            %d ml of water
+            %d ml of milk
+            %d g of coffee beans
+            %d disposable cups
+            $%d of money""";
+    private final static String WRONG_CHOICE = """
+            Your input is wrong:
+            to buy a coffee type BUY,
+            to fill supplies type FILL,
+            to take money type TAKE,
+            to check all supplies type REMAINING,
+            to exit type EXIT.
+            
+            Please try again.""";
+    private final static String MENU = "\nWrite action (buy, fill, take, remaining, exit): ";
+    private static final String TAKE_MONEY_MESSAGE = "I gave you $%d";
+    private final static String ENOUGH_RESOURCES = "I have enough resources, making you a coffee!";
+    private final static String NOT_ENOUGH_WATER = "Sorry, not enough water!";
+    private final static String NOT_ENOUGH_MILK = "Sorry, not enough milk!";
+    private final static String NOT_ENOUGH_COFFEE = "Sorry, not enough coffee beans!";
+    private final static String NOT_ENOUGH_CUPS = "Sorry, not enough disposable cups!";
+    private final static String ADD_WATER_PROMPT = "Write how many ml of water you want to add:";
+    private final static String ADD_MILK_PROMPT = "Write how many ml of milk you want to add:";
+    private final static String ADD_COFFEE_PROMPT = "Write how many grams of coffee beans you want to add:";
+    private final static String ADD_CUPS_PROMPT = "Write how many disposable cups you want to add:";
+    private final static String WRONG_INPUT = "Your input is wrong. Try again.";
 
-    public UserInterface(Scanner scanner) {
-        this.scanner = scanner;
+    public UserInterface() {
     }
 
     /**
@@ -40,7 +73,7 @@ public class UserInterface {
      */
     public void printSuppliesRemaining(int waterSupply, int milkSupply, int coffeeSupply,
                                        int disposableCup, int money) {
-        String remainingInfo = String.format(Messages.STATUS_INFO_FORMAT, waterSupply, milkSupply,
+        String remainingInfo = String.format(STATUS_INFO_FORMAT, waterSupply, milkSupply,
                 coffeeSupply, disposableCup, money);
         display(remainingInfo);
     }
@@ -78,35 +111,35 @@ public class UserInterface {
      * Displays a success message when there are enough resources to make coffee.
      */
     public void displaySuccessMessage() {
-        display(Messages.ENOUGH_RESOURCES);
+        display(ENOUGH_RESOURCES);
     }
 
     /**
      * Displays a message indicating there is not enough water to make coffee.
      */
     public void displayNotEnoughWater() {
-        display(Messages.NOT_ENOUGH_WATER);
+        display(NOT_ENOUGH_WATER);
     }
 
     /**
      * Displays a message indicating there is not enough milk to make coffee.
      */
     public void displayNotEnoughMilk() {
-        display(Messages.NOT_ENOUGH_MILK);
+        display(NOT_ENOUGH_MILK);
     }
 
     /**
      * Displays a message indicating there is not enough coffee to make coffee.
      */
     public void displayNotEnoughCoffee() {
-        display(Messages.NOT_ENOUGH_COFFEE);
+        display(NOT_ENOUGH_COFFEE);
     }
 
     /**
      * Displays a message indicating there are not enough disposable cups.
      */
     public void displayNotEnoughCups() {
-        display(Messages.NOT_ENOUGH_CUPS);
+        display(NOT_ENOUGH_CUPS);
     }
 
     /**
@@ -115,7 +148,7 @@ public class UserInterface {
      * @return The amount of water to add.
      */
     public int validateWater() {
-        return validateSupplyFilling(Messages.ADD_WATER_PROMPT);
+        return validateSupplyFilling(ADD_WATER_PROMPT);
     }
 
     /**
@@ -124,7 +157,7 @@ public class UserInterface {
      * @return The amount of milk to add.
      */
     public int validateMilk() {
-        return validateSupplyFilling(Messages.ADD_MILK_PROMPT);
+        return validateSupplyFilling(ADD_MILK_PROMPT);
     }
 
     /**
@@ -133,7 +166,7 @@ public class UserInterface {
      * @return The amount of coffee to add.
      */
     public int validateCoffee() {
-        return validateSupplyFilling(Messages.ADD_COFFEE_PROMPT);
+        return validateSupplyFilling(ADD_COFFEE_PROMPT);
     }
 
     /**
@@ -142,7 +175,7 @@ public class UserInterface {
      * @return The number of disposable cups to add.
      */
     public int validateCups() {
-        return validateSupplyFilling(Messages.ADD_CUPS_PROMPT);
+        return validateSupplyFilling(ADD_CUPS_PROMPT);
     }
 
     /**
@@ -151,7 +184,7 @@ public class UserInterface {
      * @param money The amount of money taken.
      */
     public void printMoneyMessage(int money) {
-        String takeMoney = String.format(Messages.TAKE_MONEY_MESSAGE, money);
+        String takeMoney = String.format(TAKE_MONEY_MESSAGE, money);
         display(takeMoney);
     }
 
@@ -159,14 +192,14 @@ public class UserInterface {
      * Displays a message indicating the user made an invalid choice.
      */
     public void wrongChoice() {
-        display(Messages.WRONG_CHOICE);
+        display(WRONG_CHOICE);
     }
 
     /**
      * Displays a message indicating the user entered invalid input.
      */
     public void wrongInput() {
-        display(Messages.WRONG_INPUT);
+        display(WRONG_INPUT);
     }
 
     /**
@@ -191,7 +224,7 @@ public class UserInterface {
      * @return The user's input as a string.
      */
     private String printMenu() {
-        return getUserInput(Messages.MENU);
+        return getUserInput(MENU);
     }
 
     /**
@@ -230,7 +263,7 @@ public class UserInterface {
      * @return The user's input as a string.
      */
     private String printBeverages() {
-        return getUserInput(Messages.BEVERAGE_MENU);
+        return getUserInput(BEVERAGE_MENU);
     }
 
     /**
@@ -250,10 +283,10 @@ public class UserInterface {
                 isInputValid = (fillSupply >= 0);
 
                 if (!isInputValid) {
-                    display(Messages.WRONG_INPUT);
+                    display(WRONG_INPUT);
                 }
             } catch (NumberFormatException e) {
-                display(Messages.WRONG_INPUT);
+                display(WRONG_INPUT);
             }
         } while (!isInputValid);
 

@@ -1,6 +1,5 @@
 package coffeeMachine;
 
-import java.util.Scanner;
 /**
  * The CoffeeMachine class simulates a coffee machine that manages resources
  * such as water, milk, coffee, and disposable cups. It allows users to buy coffee,
@@ -15,26 +14,23 @@ public class CoffeeMachine {
 
     private Button currentChoice;
     private final UserInterface ui;
-    private final Scanner scanner;
 
     public CoffeeMachine() {
-        this.scanner = new Scanner(System.in);
-        this.ui = new UserInterface(scanner);
+        this.ui = new UserInterface();
 
     }
 
     /**
      * Constructor that initializes the CoffeeMachine with specified resource levels.
      *
-     * @param waterSupply    The initial amount of water in the machine.
-     * @param milkSupply     The initial amount of milk in the machine.
-     * @param coffeeSupply   The initial amount of coffee in the machine.
-     * @param disposableCup  The initial number of disposable cups.
-     * @param money          The initial amount of money in the machine.
+     * @param waterSupply   The initial amount of water in the machine.
+     * @param milkSupply    The initial amount of milk in the machine.
+     * @param coffeeSupply  The initial amount of coffee in the machine.
+     * @param disposableCup The initial number of disposable cups.
+     * @param money         The initial amount of money in the machine.
      */
     public CoffeeMachine(int waterSupply, int milkSupply, int coffeeSupply, int disposableCup, int money) {
-        this.scanner = new Scanner(System.in);
-        this.ui = new UserInterface(scanner);
+        this.ui = new UserInterface();
         this.waterSupply = waterSupply;
         this.milkSupply = milkSupply;
         this.coffeeSupply = coffeeSupply;
